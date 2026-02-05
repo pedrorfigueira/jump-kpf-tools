@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jump-kpf-tools"
+version = "0.5.0"
+description = "JUMP / KPF data processing toolkit"
+authors = [
+    { name = "Pedro Figueira", email = "pedro.fgueira@iaa.es" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "pandas",
+    "requests",
+    "astropy",
+]
+
+[project.scripts]
+jump-kpf-tools = "jump_kpf_tools.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]

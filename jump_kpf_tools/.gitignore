@@ -1,0 +1,39 @@
+# ============================
+# Python build artifacts
+# ============================
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# ============================
+# Editor / IDE files
+# ============================
+.idea/
+
+# ============================
+# Runtime data products
+# ============================
+*.fits
+*.rdb
+*.csv
+*.md
+
+# ============================
+# Downloaded / generated folders
+# ============================
+L2/
+KPF_FITS/
+kpf_fits/
+kimaRVs/
+kima_rvs/
+processed_summary/
+
+# ============================
+# Credentials / secrets
+# ============================
+cookies.txt
+jump_cookies.txt
