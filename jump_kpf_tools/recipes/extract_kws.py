@@ -5,8 +5,8 @@ import shutil
 from astropy.io import fits
 
 from jump_kpf_tools.config.configfile import KEYWORDS, LATEST_DRPHASH
-from jump_kpf_tools.recipes.downloader import download_l2, make_jump_session
 
+from jump_kpf_tools.recipes.kws_utils import outdated_obs_ids, move_old_versions, rename_old_csv
 
 # -----------------------------
 # Core keyword extraction
@@ -94,92 +94,10 @@ def write_rerun_csv(star, rows, outdir, verbose=True):
 
 
 # -----------------------------
-# DRPHASH logic
-# -----------------------------
-
-def outdated_obs_ids(rows):
-    obs_ids = []
-    for row in rows:
-        if row.get("PRIMARY.DRPHASH") != LATEST_DRPHASH:
-            obs_ids.append(row["filename"].replace("_L2.fits", ""))
-    return obs_ids
-
-
-# -----------------------------
-# File management
-# -----------------------------
-
-def move_old_versions(star_dir, rows, verbose=True):
-    old_dir = star_dir / "oldversions"
-    old_dir.mkdir(exist_ok=True)
-
-    moved = False
-    for row in rows:
-        if row.get("PRIMARY.DRPHASH") != LATEST_DRPHASH:
-            fits_name = row["filename"]
-            src = star_dir / fits_name
-            dst = old_dir / fits_name
-
-            if src.exists():
-                shutil.move(src, dst)
-                moved = True
-                if verbose:
-                    print(f"→ Moved outdated FITS: {fits_name}")
-            elif verbose:
-                print(f"⚠ Missing FITS on disk: {fits_name}")
-
-    if not moved and verbose:
-        print("✓ No outdated FITS to move")
-
-    return moved
-
-
-def rename_old_csv(csv_dir, star, verbose=True):
-    csv_dir = Path(csv_dir)
-    src = csv_dir / f"{star}_rv.csv"
-    dst = csv_dir / f"{star}_rv_oldversion.csv"
-
-    if not src.exists():
-        if verbose:
-            print(f"⚠ CSV not found: {src}")
-        return
-
-    if dst.exists():
-        if verbose:
-            print(f"⚠ Oldversion CSV already exists: {dst}")
-        return
-
-    src.rename(dst)
-    if verbose:
-        print(f"→ Renamed CSV: {src.name} → {dst.name}")
-
-
-# -----------------------------
-# Re-download logic
-# -----------------------------
-
-def redownload_l2(obs_ids, outdir, cookie_file=None, overwrite=True, verbose=True):
-    if not obs_ids:
-        return
-
-    session = make_jump_session(cookie_file)
-
-    for obs_id in obs_ids:
-        download_l2(
-            session=session,
-            obs_id=obs_id,
-            outdir=outdir,
-            overwrite=overwrite,
-            verbose=verbose
-        )
-
-
-# -----------------------------
 # Orchestration
 # -----------------------------
 
-def extract_fits_keywords(input_root, output_root, csv_root=None,
-                          cookie_file=None, repeatdownload=False, verbose=True):
+def extract_fits_keywords(input_root, output_root, csv_root=None, verbose=True):
 
     input_root = Path(input_root)
     output_root = Path(output_root)
@@ -217,22 +135,3 @@ def extract_fits_keywords(input_root, output_root, csv_root=None,
 
         # ---- RERUN CSV ----
         write_rerun_csv(star, rows, rerun_dir, verbose)
-
-        # ---- REPEATDOWNLOAD ----
-        if repeatdownload:
-            if verbose:
-                print(f"↻ repeatdownload enabled for {star}")
-
-            moved_any = move_old_versions(star_dir, rows, verbose)
-            obs_ids = outdated_obs_ids(rows)
-
-            redownload_l2(
-                obs_ids=obs_ids,
-                outdir=star_dir,
-                cookie_file=cookie_file,
-                overwrite=True,
-                verbose=verbose
-            )
-
-            if moved_any and csv_root is not None:
-                rename_old_csv(csv_root, star, verbose)

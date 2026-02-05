@@ -25,6 +25,7 @@ dist/
 # ============================
 # Downloaded / generated folders
 # ============================
+data/
 jumpRVs/
 kimaRVs/
 KPF_FITS/

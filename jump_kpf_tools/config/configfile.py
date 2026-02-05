@@ -15,13 +15,13 @@ STAR_LIST = [
 ]
 
 # ---- Default paths for folders ----
-DEFAULT_CSV_DIR = Path("../jumpRVs/")
-DEFAULT_KIMA_OUTPUT_DIR = Path("../kimaRVs/")
-DEFAULT_FITS_DIR = Path("../L2FITS/")
-DEFAULT_SUMMARY_DIR = Path("../processed/")
+DEFAULT_CSV_DIR = Path("data/jumpRVs/")
+DEFAULT_KIMA_OUTPUT_DIR = Path("data/kimaRVs/")
+DEFAULT_FITS_DIR = Path("data/L2FITS/")
+DEFAULT_SUMMARY_DIR = Path("data/processed/")
 
 # ---- jump cookies folder ----
-DEFAULT_COOKIE_FILE = Path("./config/jump_cookies.txt")
+DEFAULT_COOKIE_FILE = Path("jump_kpf_tools/config/jump_cookies.txt")
 
 # ---- jump base URLs ----
 RV_BASE_URL = "https://jump.caltech.edu/star/{star}/rv/"

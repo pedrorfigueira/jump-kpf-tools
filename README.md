@@ -34,7 +34,7 @@ jump-kpf-tools/
 │
 └─── jump_kpf_tools/
     ├── __init__.py
-    ├── app.py          # CLI entry point
+    ├── app.py          
     │
     ├── config/
     │   ├── __init__.py
@@ -44,6 +44,7 @@ jump-kpf-tools/
         ├── __init__.py
         ├── rv_processing.py
         ├── downloader.py
+        ├── kws_utils.py
         └── extract_kws.py
 ```
 

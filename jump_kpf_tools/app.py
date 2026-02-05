@@ -3,7 +3,7 @@
 import argparse
 
 from jump_kpf_tools.recipes.rv_processing import csv_to_rdb
-from jump_kpf_tools.recipes.downloader import download_rv_csvs, download_from_csv
+from jump_kpf_tools.recipes.downloader import auth_check, download_from_csv, download_rv_csvs, redownload_outdated_l2
 from jump_kpf_tools.recipes.extract_kws import extract_fits_keywords
 
 from jump_kpf_tools.config.configfile import (
@@ -22,10 +22,30 @@ def main():
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    auth_parser = subparsers.add_parser(
+        "auth-check",
+        help="Verify JUMP authentication cookies"
+    )
+    auth_parser.add_argument(
+        "--cookies",
+        default=str(DEFAULT_COOKIE_FILE),
+        help="jump interface cookies.txt file (see README)"
+    )
+    auth_parser.add_argument(
+        "--test-star",
+        default=None,
+        help="Star name to test RV endpoint (optional)"
+    )
+    auth_parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress success output"
+    )
+
     # ---- RV CSV downloader command ----
     rvdl_parser = subparsers.add_parser(
-        "download_rv",
-        help="Download *_rv.csv files for configured stars"
+        "download-rv",
+        help="Download *_rv.csv files for stars listed in configfile.py"
     )
     rvdl_parser.add_argument(
         "--stars",
@@ -39,8 +59,8 @@ def main():
     )
     rvdl_parser.add_argument(
         "--cookies",
-        default=None,
-        help="cookies.txt file (if RV endpoint requires auth)"
+        default=str(DEFAULT_COOKIE_FILE),
+        help="jump interface cookies.txt file (see README)"
     )
     rvdl_parser.add_argument(
         "--overwrite",
@@ -55,8 +75,8 @@ def main():
 
     # ---- RV conversion command ----
     rv_parser = subparsers.add_parser(
-        "conv_kima",
-        help="Convert *_rv.csv files into kima-compatible .rdb files"
+        "conv-kima",
+        help="Convert jump *_rv.csv files into kima-compatible .rdb files"
     )
     rv_parser.add_argument(
         "--csv-dir",
@@ -66,7 +86,7 @@ def main():
     rv_parser.add_argument(
         "--kima-output-dir",
         default=str(DEFAULT_KIMA_OUTPUT_DIR),
-        help="Output directory for .rdb files"
+        help="Output directory for kima-ready .rdb files"
     )
     rv_parser.add_argument(
         "--quiet",
@@ -76,7 +96,7 @@ def main():
 
     # ---- FITS downloader command ----
     dl_parser = subparsers.add_parser(
-        "download_L2",
+        "download-L2",
         help="Download KPF L2 FITS files listed in *_rv.csv files"
     )
     dl_parser.add_argument(
@@ -92,7 +112,7 @@ def main():
     dl_parser.add_argument(
         "--cookies",
         default=str(DEFAULT_COOKIE_FILE),
-        help="cookies.txt file exported from browser"
+        help="jump interface cookies.txt file (see README)"
     )
     dl_parser.add_argument(
         "--overwrite",
@@ -107,8 +127,8 @@ def main():
 
     # ---- FITS keyword extraction command ----
     kw_parser = subparsers.add_parser(
-        "check_KWs",
-        help="Extract and check FITS header keywords; create/move Md tables and .csv"
+        "check-KWs",
+        help="Extract and check FITS header keywords; associated housekeeping: create Md summaries, rename *_rv.csv with old versions"
     )
     kw_parser.add_argument(
         "--fits-dir",
@@ -126,11 +146,32 @@ def main():
         help="Output directory for Markdown tables"
     )
     kw_parser.add_argument(
-        "--repeatdownload",
+        "--quiet",
         action="store_true",
-        help="Move outdated FITS to oldversions/, redownload; rename old _rv.csv files"
+        help="Suppress progress output"
     )
-    kw_parser.add_argument(
+
+    # ---- redownload L2 with old versions ----
+    rd_parser = subparsers.add_parser(
+        "redownload-L2",
+        help="Move outdated L2 FITS to oldversions/ and re-download fresh versions"
+    )
+    rd_parser.add_argument(
+        "--fits-dir",
+        default=str(DEFAULT_FITS_DIR),
+        help="Directory containing STAR/ FITS subfolders"
+    )
+    rd_parser.add_argument(
+        "--csv-dir",
+        default=str(DEFAULT_CSV_DIR),
+        help="Directory containing *_rv.csv files"
+    )
+    rd_parser.add_argument(
+        "--cookies",
+        default=str(DEFAULT_COOKIE_FILE),
+        help="jump interface cookies.txt file (see README)"
+    )
+    rd_parser.add_argument(
         "--quiet",
         action="store_true",
         help="Suppress progress output"
@@ -139,7 +180,17 @@ def main():
     args = parser.parse_args()
 
     # ---- Dispatch ----
-    if args.command == "download-rv":
+    if args.command == "auth-check":
+        try:
+            auth_check(
+                cookie_file=args.cookies,
+                test_star=args.test_star,
+                verbose=not args.quiet
+            )
+        except Exception as e:
+            print(f"✗ {e}")
+            raise SystemExit(1)
+    elif args.command == "download-rv":
         stars = (
             [s.strip() for s in args.stars.split(",") if s.strip()]
             if args.stars else STAR_LIST
@@ -171,7 +222,13 @@ def main():
             input_root=args.fits_dir,
             output_root=args.summary_dir,
             csv_root=args.csv_dir,
-            repeatdownload=args.repeatdownload,
+            verbose=not args.quiet
+        )
+    elif args.command == "redownload-L2":
+        redownload_outdated_l2(
+            fits_root=args.fits_dir,
+            csv_root=args.csv_dir,
+            cookie_file=args.cookies,
             verbose=not args.quiet
         )
 
