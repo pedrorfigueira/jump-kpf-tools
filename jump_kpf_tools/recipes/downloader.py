@@ -10,6 +10,8 @@ from jump_kpf_tools.recipes.kws_utils import (
     outdated_obs_ids,
     move_old_versions,
     rename_old_csv,
+    rename_old_md_tables,
+    rename_global_rerun,
 )
 
 from jump_kpf_tools.recipes.extract_kws import extract_keywords
@@ -249,7 +251,7 @@ def download_from_csv(
             )
 
 
-def redownload_outdated_l2(fits_root, csv_root=None, cookie_file=None, verbose=True):
+def redownload_outdated_l2(fits_root, csv_root=None, summary_root=None, cookie_file=None, verbose=True):
     """
     Move outdated L2 FITS files to oldversions/ and re-download fresh versions.
     """
@@ -288,3 +290,13 @@ def redownload_outdated_l2(fits_root, csv_root=None, cookie_file=None, verbose=T
 
         if moved_any and csv_root is not None:
             rename_old_csv(csv_root, star, verbose)
+
+        if moved_any and summary_root is not None:
+            rename_old_md_tables(summary_root, star, verbose)
+
+    if summary_root is not None:
+        rename_global_rerun(summary_root, verbose)
+
+    if verbose:
+        print("\n⚠ Keyword summaries are now outdated.")
+        print("→ Please rerun: jump-kpf-tools check-KWs")

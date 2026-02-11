@@ -97,7 +97,7 @@ def write_rerun_csv(star, rows, outdir, verbose=True):
 # Orchestration
 # -----------------------------
 
-def extract_fits_keywords(input_root, output_root, csv_root=None, verbose=True):
+def extract_fits_keywords(input_root, output_root, verbose=True):
 
     input_root = Path(input_root)
     output_root = Path(output_root)
@@ -109,6 +109,9 @@ def extract_fits_keywords(input_root, output_root, csv_root=None, verbose=True):
     complete_dir.mkdir(parents=True, exist_ok=True)
     diff_dir.mkdir(parents=True, exist_ok=True)
     rerun_dir.mkdir(parents=True, exist_ok=True)
+
+    # ---- GLOBAL collector ----
+    all_rerun_obs = []
 
     for star_dir in input_root.iterdir():
         if not star_dir.is_dir():
@@ -133,5 +136,29 @@ def extract_fits_keywords(input_root, output_root, csv_root=None, verbose=True):
         elif verbose:
             print(f"ℹ No varying keywords for {star}")
 
-        # ---- RERUN CSV ----
+        # ---- RERUN CSV (per star) ----
         write_rerun_csv(star, rows, rerun_dir, verbose)
+
+        # ---- Collect for global file ----
+        rerun_obs = outdated_obs_ids(rows)
+        all_rerun_obs.extend(rerun_obs)
+
+    # ======================================================
+    # GLOBAL RERUN FILE
+    # ======================================================
+
+    if all_rerun_obs:
+        alltargets_file = rerun_dir / "alltargets_rerun.txt"
+
+        # Remove duplicates + sort for determinism
+        unique_obs = sorted(set(all_rerun_obs))
+
+        with open(alltargets_file, "w") as f:
+            for obs in unique_obs:
+                f.write(f"{obs}\n")
+
+        if verbose:
+            print(f"\n⚠ Global rerun list written: {alltargets_file}")
+    elif verbose:
+        print("\n✓ No outdated observations across all targets")
+

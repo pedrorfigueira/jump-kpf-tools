@@ -39,4 +39,4 @@ KEYWORDS = {
 }
 
 # ---- HASH of the latest pipeline ----
-LATEST_DRPHASH = 'fff22091d425c0b20d98c1bb8932a17f0ce64744'
+LATEST_DRPHASH = '81609b0ac0ab6d12536fb771bfdd0112001340c3'

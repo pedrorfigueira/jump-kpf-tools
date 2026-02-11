@@ -128,17 +128,12 @@ def main():
     # ---- FITS keyword extraction command ----
     kw_parser = subparsers.add_parser(
         "check-KWs",
-        help="Extract and check FITS header keywords; associated housekeeping: create Md summaries, rename *_rv.csv with old versions"
+        help="Extract and check FITS header keywords; create Md summaries of keyword"
     )
     kw_parser.add_argument(
         "--fits-dir",
         default=str(DEFAULT_FITS_DIR),
         help="Directory containing STAR/ FITS subfolders"
-    )
-    kw_parser.add_argument(
-        "--csv-dir",
-        default=str(DEFAULT_CSV_DIR),
-        help="Directory containing *_rv.csv files"
     )
     kw_parser.add_argument(
         "--summary-dir",
@@ -154,7 +149,7 @@ def main():
     # ---- redownload L2 with old versions ----
     rd_parser = subparsers.add_parser(
         "redownload-L2",
-        help="Move outdated L2 FITS to oldversions/ and re-download fresh versions"
+        help="Move outdated L2 FITS to oldversions/ and re-download fresh versions; rename old *_rv.csv and FITS .Md tables"
     )
     rd_parser.add_argument(
         "--fits-dir",
@@ -165,6 +160,11 @@ def main():
         "--csv-dir",
         default=str(DEFAULT_CSV_DIR),
         help="Directory containing *_rv.csv files"
+    )
+    rd_parser.add_argument(
+        "--summary-dir",
+        default=str(DEFAULT_SUMMARY_DIR),
+        help="Directory containing keyword summaries"
     )
     rd_parser.add_argument(
         "--cookies",
@@ -221,13 +221,13 @@ def main():
         extract_fits_keywords(
             input_root=args.fits_dir,
             output_root=args.summary_dir,
-            csv_root=args.csv_dir,
             verbose=not args.quiet
         )
     elif args.command == "redownload-L2":
         redownload_outdated_l2(
             fits_root=args.fits_dir,
             csv_root=args.csv_dir,
+            summary_root=args.summary_dir,
             cookie_file=args.cookies,
             verbose=not args.quiet
         )

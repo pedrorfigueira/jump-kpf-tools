@@ -22,6 +22,141 @@ pip install .
 ```
 To install in editable / developer mode use the flag `-e`; this enables live code editing without having to reinstall.
 
+# How to use
+
+After installation:
+
+```bash
+jump-kpf-tools --help
+```
+
+The CLI provides the following workflow-oriented commands.
+
+---
+
+## 1️⃣ Check authentication (recommended first step)
+
+Verify that your exported JUMP cookies are valid:
+
+```bash
+jump-kpf-tools auth-check --cookies config/jump_cookies.txt
+```
+
+If authentication fails, re-export cookies from your browser.
+
+---
+
+## 2️⃣ Download RV CSV files
+
+Download `*_rv.csv` files for stars defined in `configfile.py`:
+
+```bash
+jump-kpf-tools download-rv
+```
+
+Override the star list:
+
+```bash
+jump-kpf-tools download-rv --stars k2-155,toi-1346
+```
+
+Force overwrite:
+
+```bash
+jump-kpf-tools download-rv --overwrite
+```
+
+---
+
+## 3️⃣ Convert RVs for kima
+
+Convert `*_rv.csv` files into kima-compatible `.rdb` files:
+
+```bash
+jump-kpf-tools conv-kima
+```
+
+Output files are written to the configured kima output directory.
+
+---
+
+## 4️⃣ Download L2 FITS files
+
+Download L2 FITS files listed in the `observation_id` column of the CSVs:
+
+```bash
+jump-kpf-tools download-L2
+```
+
+Force redownload:
+
+```bash
+jump-kpf-tools download-L2 --overwrite
+```
+
+---
+
+## 5️⃣ Check FITS keywords
+
+Extract header keywords and generate Markdown summaries:
+
+```bash
+jump-kpf-tools check-KWs
+```
+
+This creates:
+
+```
+processed_summary/
+  complete/
+  diff/
+  rerun/
+    TARGET_rerun.csv
+    alltargets_rerun.txt
+```
+
+* `complete/` → full keyword tables
+* `diff/` → only varying keywords
+* `rerun/` → observations with outdated DRPHASH
+
+---
+
+## 6️⃣ Re-download outdated L2 FITS
+
+Move outdated FITS into `oldversions/` and download fresh versions:
+
+```bash
+jump-kpf-tools redownload-L2
+```
+
+This will:
+
+* Move outdated FITS to `STAR/oldversions/`
+* Download fresh L2 files
+* Rename outdated `*_rv.csv`
+* Rename rerun summary files
+
+After running this command, re-run:
+
+```bash
+jump-kpf-tools check-KWs
+```
+
+to confirm consistency.
+
+---
+
+## Typical Workflow
+
+```bash
+jump-kpf-tools auth-check
+jump-kpf-tools download-rv
+jump-kpf-tools download-L2
+jump-kpf-tools check-KWs
+jump-kpf-tools redownload-L2
+jump-kpf-tools check-KWs
+jump-kpf-tools conv-kima
+```
 
 ## 📚 Folder Structure
 
