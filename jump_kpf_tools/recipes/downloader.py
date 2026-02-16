@@ -258,6 +258,8 @@ def redownload_outdated_l2(fits_root, csv_root=None, summary_root=None, cookie_f
     fits_root = Path(fits_root)
     session = make_jump_session(cookie_file)
 
+    any_changes = False
+
     for star_dir in fits_root.iterdir():
         if not star_dir.is_dir():
             continue
@@ -279,6 +281,9 @@ def redownload_outdated_l2(fits_root, csv_root=None, summary_root=None, cookie_f
 
         moved_any = move_old_versions(star_dir, rows, verbose)
 
+        if moved_any:
+            any_changes = True
+
         for obs_id in obs_ids:
             download_l2(
                 session=session,
@@ -297,6 +302,6 @@ def redownload_outdated_l2(fits_root, csv_root=None, summary_root=None, cookie_f
     if summary_root is not None:
         rename_global_rerun(summary_root, verbose)
 
-    if verbose:
+    if verbose and any_changes:
         print("\n⚠ Keyword summaries are now outdated.")
         print("→ Please rerun: jump-kpf-tools check-KWs")

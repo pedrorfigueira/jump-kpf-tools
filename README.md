@@ -22,6 +22,16 @@ pip install .
 ```
 To install in editable / developer mode use the flag `-e`; this enables live code editing without having to reinstall.
 
+Here is the **updated and internally consistent** `# How to use` section reflecting:
+
+* Moving of outdated FITS now handled by `check-KWs`
+* `alltargets_rerun.csv` (not `.txt`)
+* `redownload-L2` only performs re-download + renaming
+* Addition of `plot-RV`
+* Correct logical ordering
+
+---
+
 # How to use
 
 After installation:
@@ -30,7 +40,7 @@ After installation:
 jump-kpf-tools --help
 ```
 
-The CLI provides the following workflow-oriented commands.
+The CLI provides workflow-oriented commands for JUMP/KPF data handling.
 
 ---
 
@@ -68,19 +78,7 @@ jump-kpf-tools download-rv --overwrite
 
 ---
 
-## 3️⃣ Convert RVs for kima
-
-Convert `*_rv.csv` files into kima-compatible `.rdb` files:
-
-```bash
-jump-kpf-tools conv-kima
-```
-
-Output files are written to the configured kima output directory.
-
----
-
-## 4️⃣ Download L2 FITS files
+## 3️⃣ Download L2 FITS files
 
 Download L2 FITS files listed in the `observation_id` column of the CSVs:
 
@@ -96,7 +94,7 @@ jump-kpf-tools download-L2 --overwrite
 
 ---
 
-## 5️⃣ Check FITS keywords
+## 4️⃣ Check FITS keywords
 
 Extract header keywords and generate Markdown summaries:
 
@@ -112,18 +110,25 @@ processed_summary/
   diff/
   rerun/
     TARGET_rerun.csv
-    alltargets_rerun.txt
+    alltargets_rerun.csv
 ```
 
 * `complete/` → full keyword tables
 * `diff/` → only varying keywords
-* `rerun/` → observations with outdated DRPHASH
+* `rerun/` → observations with outdated `DRPHASH`
+
+If outdated files are detected:
+
+* The corresponding L2 FITS files are moved into `STAR/oldversions/`
+* `*_rerun.csv` files are generated listing affected observations
+
+If no outdated files are found, no further action is required.
 
 ---
 
-## 6️⃣ Re-download outdated L2 FITS
+## 5️⃣ Re-download outdated L2 FITS
 
-Move outdated FITS into `oldversions/` and download fresh versions:
+If outdated files were detected and the external DRP pipeline has been rerun, download fresh L2 products:
 
 ```bash
 jump-kpf-tools redownload-L2
@@ -131,10 +136,9 @@ jump-kpf-tools redownload-L2
 
 This will:
 
-* Move outdated FITS to `STAR/oldversions/`
-* Download fresh L2 files
-* Rename outdated `*_rv.csv`
-* Rename rerun summary files
+* Download updated L2 FITS for affected observations
+* Rename outdated `*_rv.csv` files
+* Rename rerun summary files for bookkeeping clarity
 
 After running this command, re-run:
 
@@ -142,21 +146,79 @@ After running this command, re-run:
 jump-kpf-tools check-KWs
 ```
 
-to confirm consistency.
+to regenerate keyword summaries and verify consistency.
 
 ---
 
-## Typical Workflow
+## 6️⃣ Convert RVs for kima
+
+Convert `*_rv.csv` files into kima-compatible `.rdb` files:
 
 ```bash
-jump-kpf-tools auth-check
-jump-kpf-tools download-rv
-jump-kpf-tools download-L2
-jump-kpf-tools check-KWs
-jump-kpf-tools redownload-L2
-jump-kpf-tools check-KWs
 jump-kpf-tools conv-kima
 ```
+
+Output files are written to the configured kima output directory.
+Filenames include floating KPF era identifiers (e.g., `STAR_KPF2p0.rdb`).
+
+---
+
+## 7️⃣ Plot RV time series
+
+Generate PDF plots (two pages per star):
+
+```bash
+jump-kpf-tools plot-RV
+```
+
+Each PDF contains:
+
+**Page 1** – Absolute RV
+
+* Errorbar plot
+* Per-era markers
+* RMS, median uncertainty, RMS/σ box
+
+**Page 2** – Per-era centered RV
+
+* Mean-subtracted per era
+* 4σ outlier identification (per era)
+* Internal scatter computed after outlier removal
+* Outlier counts indicated in legend
+
+Plots are saved in the configured plot directory.
+
+---
+
+# Summary of Typical Workflow
+
+```
+auth-check
+      ↓
+download-rv
+      ↓
+download-L2
+      ↓
+check-KWs
+      ↓
+If outdated observations found:
+      → (external DRP rerun)
+      → redownload-L2
+      → check-KWs
+      → download-rv
+      → plot-RV
+Else:
+      → plot-RV
+      → conv-kima
+```
+
+This reflects the full operational logic of the pipeline.
+
+---
+
+If you'd like, I can now produce a compact visual workflow diagram version suitable for the README as well.
+
+---
 
 ## 📚 Folder Structure
 

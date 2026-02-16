@@ -16,6 +16,8 @@ dependencies = [
     "pandas",
     "requests",
     "astropy",
+    "matplotlib",
+    "numpy",
 ]
 
 [project.scripts]

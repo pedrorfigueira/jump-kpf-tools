@@ -148,14 +148,16 @@ def extract_fits_keywords(input_root, output_root, verbose=True):
     # ======================================================
 
     if all_rerun_obs:
-        alltargets_file = rerun_dir / "alltargets_rerun.txt"
+        alltargets_file = rerun_dir / "alltargets_rerun.csv"
 
         # Remove duplicates + sort for determinism
         unique_obs = sorted(set(all_rerun_obs))
 
-        with open(alltargets_file, "w") as f:
+        with open(alltargets_file, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["observation_id"])
             for obs in unique_obs:
-                f.write(f"{obs}\n")
+                writer.writerow([obs])
 
         if verbose:
             print(f"\n⚠ Global rerun list written: {alltargets_file}")

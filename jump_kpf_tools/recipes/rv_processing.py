@@ -3,9 +3,7 @@ import pandas as pd
 
 
 def csv_to_rdb(input_dir, output_dir, verbose=True):
-    """
-    Convert *_rv.csv files into kima-compatible .rdb RV files.
-    """
+
     input_dir = Path(input_dir)
     if not input_dir.exists():
         raise FileNotFoundError(f"CSV input directory does not exist: {input_dir}")
@@ -35,13 +33,15 @@ def csv_to_rdb(input_dir, output_dir, verbose=True):
 
         star_name = csv_file.stem.replace("_rv", "")
 
+        # Ensure kpfera numeric
+        df["kpfera"] = pd.to_numeric(df["kpfera"], errors="coerce")
+        df = df.dropna(subset=["kpfera"])
+
         for kpfera_value, group in df.groupby("kpfera"):
-            try:
-                kpfera_int = int(kpfera_value)
-            except ValueError:
-                if verbose:
-                    print(f"Skipping kpfera={kpfera_value} in {csv_file}")
-                continue
+
+            # Format era as 1 decimal float
+            era_float = float(kpfera_value)
+            era_str = f"{era_float:.1f}".replace(".", "p")
 
             # Transform data
             rjd = group["bjd"] - 2400000.0
@@ -54,7 +54,7 @@ def csv_to_rdb(input_dir, output_dir, verbose=True):
                 "svrad": svrad
             })
 
-            out_file = output_dir / f"{star_name}_KPFera{kpfera_int}.rdb"
+            out_file = output_dir / f"{star_name}_KPF{era_str}.rdb"
 
             with open(out_file, "w") as f:
                 f.write("rjd\tvrad\tsvrad\n")
@@ -69,3 +69,4 @@ def csv_to_rdb(input_dir, output_dir, verbose=True):
 
             if verbose:
                 print(f"Written: {out_file}")
+

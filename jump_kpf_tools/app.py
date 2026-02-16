@@ -2,18 +2,20 @@
 
 import argparse
 
-from jump_kpf_tools.recipes.rv_processing import csv_to_rdb
-from jump_kpf_tools.recipes.downloader import auth_check, download_from_csv, download_rv_csvs, redownload_outdated_l2
-from jump_kpf_tools.recipes.extract_kws import extract_fits_keywords
-
 from jump_kpf_tools.config.configfile import (
     STAR_LIST,
     DEFAULT_CSV_DIR,
     DEFAULT_KIMA_OUTPUT_DIR,
     DEFAULT_FITS_DIR,
     DEFAULT_SUMMARY_DIR,
+    DEFAULT_PLOT_DIR,
     DEFAULT_COOKIE_FILE,
 )
+
+from jump_kpf_tools.recipes.rv_processing import csv_to_rdb
+from jump_kpf_tools.recipes.downloader import auth_check, download_from_csv, download_rv_csvs, redownload_outdated_l2
+from jump_kpf_tools.recipes.extract_kws import extract_fits_keywords
+from jump_kpf_tools.recipes.plot_rv import plot_rv
 
 def main():
     parser = argparse.ArgumentParser(
@@ -177,6 +179,27 @@ def main():
         help="Suppress progress output"
     )
 
+    # ---- Plot RV command ----
+    plot_parser = subparsers.add_parser(
+        "plot-rv",
+        help="Generate RV errorbar plots per target"
+    )
+    plot_parser.add_argument(
+        "--csv-dir",
+        default=str(DEFAULT_CSV_DIR),
+        help="Directory containing *_rv.csv files"
+    )
+    plot_parser.add_argument(
+        "--plot-dir",
+        default=str(DEFAULT_PLOT_DIR),
+        help="Directory where PDF plots will be written"
+    )
+    plot_parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress progress output"
+    )
+
     args = parser.parse_args()
 
     # ---- Dispatch ----
@@ -229,6 +252,12 @@ def main():
             csv_root=args.csv_dir,
             summary_root=args.summary_dir,
             cookie_file=args.cookies,
+            verbose=not args.quiet
+        )
+    elif args.command == "plot-rv":
+        plot_rv(
+            csv_dir=args.csv_dir,
+            plot_dir=args.plot_dir,
             verbose=not args.quiet
         )
 

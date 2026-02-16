@@ -19,6 +19,7 @@ DEFAULT_CSV_DIR = Path("data/jumpRVs/")
 DEFAULT_KIMA_OUTPUT_DIR = Path("data/kimaRVs/")
 DEFAULT_FITS_DIR = Path("data/L2FITS/")
 DEFAULT_SUMMARY_DIR = Path("data/processed/")
+DEFAULT_PLOT_DIR = Path("data/plots/")
 
 # ---- jump cookies folder ----
 DEFAULT_COOKIE_FILE = Path("jump_kpf_tools/config/jump_cookies.txt")
