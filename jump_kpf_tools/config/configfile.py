@@ -3,15 +3,31 @@
 from pathlib import Path
 
 STAR_LIST = [
-    "k2-155",
-    "toi-1346",
-    "toi-1432",
-    "toi-1466",
-    "toi-1748",
-    "toi-2079",
-    "toi-2274",
-    "toi-2470",
-    "toi-4363",
+    # regular THIRSTEE list
+    #"k2-155",
+    #"toi-1346",
+    #"toi-1432",
+    #"toi-1466",
+    #"toi-1748",
+    #"toi-2079",
+    #"toi-2274",
+    #"toi-2470",
+    #"toi-4363",
+    # OrCAS
+    "toi-1180",
+    "toi-1184",
+    "toi-1630",
+    "toi-1691",
+    "toi-1716",
+    "toi-1723",
+    "toi-1739",
+    "toi-1744",
+    "toi-1758",
+    "toi-1772",
+    "toi-1777",
+    "toi-2211",
+    "toi-5726",
+    "toi-6054",
 ]
 
 # ---- Default paths for folders ----
@@ -21,8 +37,11 @@ DEFAULT_FITS_DIR = Path("data/L2FITS/")
 DEFAULT_SUMMARY_DIR = Path("data/processed/")
 DEFAULT_PLOT_DIR = Path("data/plots/")
 
+# Path to the installed package directory
+PACKAGE_ROOT = Path(__file__).resolve().parent.parent
+
 # ---- jump cookies folder ----
-DEFAULT_COOKIE_FILE = Path("jump_kpf_tools/config/jump_cookies.txt")
+DEFAULT_COOKIE_FILE = PACKAGE_ROOT / "config" / "jump_cookies.txt"
 
 # ---- jump base URLs ----
 RV_BASE_URL = "https://jump.caltech.edu/star/{star}/rv/"

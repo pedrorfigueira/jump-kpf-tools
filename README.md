@@ -115,20 +115,29 @@ processed_summary/
 
 * `complete/` → full keyword tables
 * `diff/` → only varying keywords
-* `rerun/` → observations with outdated `DRPHASH`
+* `rerun/` → observations whose `DRPHASH` differs from the configured latest value
 
 If outdated files are detected:
 
-* The corresponding L2 FITS files are moved into `STAR/oldversions/`
-* `*_rerun.csv` files are generated listing affected observations
+* `TARGET_rerun.csv` files list affected observations
+* `alltargets_rerun.csv` aggregates all affected observations across targets
 
-If no outdated files are found, no further action is required.
+⚠ **No files are modified at this stage.**
+This step is purely diagnostic.
+
+If no outdated files are found:
+
+```
+✓ No outdated observations across all targets
+```
+
+and no further action is required.
 
 ---
 
 ## 5️⃣ Re-download outdated L2 FITS
 
-If outdated files were detected and the external DRP pipeline has been rerun, download fresh L2 products:
+If outdated observations were detected **and the external DRP pipeline has already been rerun**, download fresh L2 products:
 
 ```bash
 jump-kpf-tools redownload-L2
@@ -136,17 +145,29 @@ jump-kpf-tools redownload-L2
 
 This will:
 
-* Download updated L2 FITS for affected observations
-* Rename outdated `*_rv.csv` files
-* Rename rerun summary files for bookkeeping clarity
+* Move outdated FITS files into:
 
-After running this command, re-run:
+  ```
+  STAR/oldversions/
+  ```
+
+* Download updated L2 FITS products
+
+* Rename outdated `*_rv.csv` files for bookkeeping
+
+* Rename Markdown summary files
+
+* Rename rerun summary files
+
+If no outdated FITS are found, nothing is modified.
+
+After running this command, regenerate keyword summaries:
 
 ```bash
 jump-kpf-tools check-KWs
 ```
 
-to regenerate keyword summaries and verify consistency.
+to verify that all files are now consistent with the latest `DRPHASH`.
 
 ---
 
@@ -242,7 +263,8 @@ jump-kpf-tools/
         ├── rv_processing.py
         ├── downloader.py
         ├── kws_utils.py
-        └── extract_kws.py
+        ├── extract_kws.py
+        └── plot_rv.py
 ```
 
 `downloader.py` requires you to log into jump and save the cookies as a text file. For Firefox you can install an extension that **exports your cookies in Netscape `cookies.txt` format**, which is exactly what tools like `curl`, `wget` and the Python downloader expect.
