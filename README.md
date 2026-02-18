@@ -22,14 +22,6 @@ pip install .
 ```
 To install in editable / developer mode use the flag `-e`; this enables live code editing without having to reinstall.
 
-Here is the **updated and internally consistent** `# How to use` section reflecting:
-
-* Moving of outdated FITS now handled by `check-KWs`
-* `alltargets_rerun.csv` (not `.txt`)
-* `redownload-L2` only performs re-download + renaming
-* Addition of `plot-RV`
-* Correct logical ordering
-
 ---
 
 # How to use
@@ -186,30 +178,38 @@ Filenames include floating KPF era identifiers (e.g., `STAR_KPF2p0.rdb`).
 
 ## 7️⃣ Plot RV time series
 
-Generate PDF plots (two pages per star):
+Generate PDF plots (two pages per star + one global comparison plot):
 
 ```bash
-jump-kpf-tools plot-RV
+jump-kpf-tools plot-rv
 ```
 
-Each PDF contains:
+For each star, a PDF is created containing:
 
-**Page 1** – Absolute RV
+### **Page 1** – Absolute RV
 
-* Errorbar plot
-* Per-era markers
-* RMS, median uncertainty, RMS/σ box
-
-**Page 2** – Per-era centered RV
+### **Page 2** – Per-era centered RV
 
 * Mean-subtracted per era
-* 4σ outlier identification (per era)
-* Internal scatter computed after outlier removal
-* Outlier counts indicated in legend
-
-Plots are saved in the configured plot directory.
+* 4σ outlier identification and removal (per era)
 
 ---
+
+### 🌍 Global RV comparison
+
+In addition, a combined plot (`global_RV.pdf`) is generated including all stars.
+
+Features:
+
+* Uses per-era centered RVs with 4σ rejection (same logic as Page 2)
+* Only eras with at least `MIN_RV_ERA_GENPLOT` RV points
+  (defined in `configfile.py`) are included.
+* The threshold is applied **after 4σ outlier rejection**.
+
+This ensures that the global comparison includes only statistically robust datasets.
+
+---
+
 
 # Summary of Typical Workflow
 
@@ -227,9 +227,9 @@ If outdated observations found:
       → redownload-L2
       → check-KWs
       → download-rv
-      → plot-RV
+      → plot-rv
 Else:
-      → plot-RV
+      → plot-rv
       → conv-kima
 ```
 

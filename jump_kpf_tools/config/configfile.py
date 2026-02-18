@@ -60,3 +60,6 @@ KEYWORDS = {
 
 # ---- HASH of the latest pipeline ----
 LATEST_DRPHASH = '81609b0ac0ab6d12536fb771bfdd0112001340c3'
+
+# ---- min number RV general plot ----
+MIN_RV_ERA_GENPLOT = 20
